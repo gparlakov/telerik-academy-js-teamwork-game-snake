@@ -134,11 +134,11 @@ var GameObjectsNS = (function () {
         Food: Food,
         Rock: Rock,
         Wall: Wall,
-        // TODO:
 
-        // a piece that takes its next position from a previous piece and 
-        // puts its current position in a propertyfor the next
-        // tailpiece to take , each piece must have a pointer to the previous piece
+        // TODO:
+        // TailPiece = object,piece that takes its next position from a previous piece and 
+        // puts its current position in a property for the next
+        // tailpiece to take, each piece must have a pointer to the previous piece
         //TailPiece: TailPiece 
 
         //SnakeObject: SnakeObject, -- not needed - we'll have a head and it will have one property - last/previous coordinates and the first tail will have a ponter to that
@@ -349,7 +349,7 @@ var DrawersNS = (function () {
 
     return {
         CanvasDrawer: CanvasDrawer,
-        //MenuDrawer: MenuDrawer
+        //MenuDrawer: MenuDrawer - maybe wont be needed - use DOM elements instead of drawing in 
     }
 })();
 
@@ -360,17 +360,16 @@ window.onload = function () {
     var drawer = new DrawersNS.CanvasDrawer('#canvas');
 
     var controller = new GameControllersNS.GameController(drawer);
-
     
     var snakeHeadPosition = new Coords(5,5);
-
     var snakeHeadDirection = new Coords(1, 0);
-
     var snakeHead = new GameObjectsNS.SnakeHead(snakeHeadPosition, 5, snakeHeadDirection);
 
     var food = new GameObjectsNS.Food(new Coords(66, 55), 13);
 
-
+    //idea -> var factory = new GameObjectsNS.Factory();
+    //var newFood = factory(position, width, color, collisionObjectType, //eventually direction//)
+    
     controller.addObject(snakeHead);
     controller.addObject(food);
     controller.snakeHead = snakeHead;
