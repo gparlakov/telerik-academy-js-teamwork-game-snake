@@ -61,9 +61,8 @@
     <None Include="scripts\jquery-2.0.1.intellisense.js" />
     <Content Include="scripts\jquery-2.0.1.js" />
     <Content Include="scripts\jquery-2.0.1.min.js" />
-    <Content Include="scripts\snakeBackBoneOld.js" />
+    <Content Include="scripts\snake.js" />
     <Content Include="snakeBackbone.html" />
-    <Content Include="scripts\snakeBackBone.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

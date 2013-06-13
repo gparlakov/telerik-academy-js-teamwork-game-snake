@@ -19,7 +19,7 @@ window.snakeConstants = {
     },
     colors: {
         snakeHeadColor: 'blue',
-        snakeTailColor: 'orange',
+        snakeTailColor: 'green',
         wallColor: 'black',
         rockColor: 'brown',
         foodColor: 'red'
@@ -35,7 +35,8 @@ window.snakeConstants = {
         up: 38,
         right: 39,
         down: 40
-    }
+    },
+    localStorageName: "snake-results-local",
 }
 
 var Coords = Class.create({
@@ -67,22 +68,6 @@ var Coords = Class.create({
     }
 });
 
-//stores last few ( ten coordinates and gives them to the next tailpiece
-var PreviousCoordsArray = Class.create({
-	initialize: function(widthOfOBject) {		
-		this.lastFewCoords = [];
-	},
-	push: function (coordObj) {
-		if(this.lastFewCoords.length >= 10){
-			this.lastFewCoords.unshift();
-		}		
-		this.lastFewCoords.push(coordObj);
-	},
-	dequeue: function() {
-		return this.lastFewCoords.unshift();
-	}
-});
-
 //TODO put in separate file at end of development
 var GameObjectsNS = (function () {
 
@@ -93,12 +78,6 @@ var GameObjectsNS = (function () {
         },
         getPosition: function () {
             return this.position;
-        },
-        isCollision: function (coordObj) {
-            if ((this.position.X - this.width <= coordObj.X + 1 && this.position.X >= coordObj.X - this.width - 1) &&
-                (this.position.Y - this.width <= coordObj.Y + 1 && this.position.Y >= coordObj.Y - this.width - 1)) {
-                return true;
-            }
         },
         //kind of virtual method
         update: function () { }
@@ -162,56 +141,48 @@ var GameObjectsNS = (function () {
     //start new type of piece
     var TailPiece = Class.create(MovableObject, {
         initialize: function ($super, position, width, prevPiece) {
-            $super(position, width, new Coords(0,0));
+            $super(position, width, new Coords(0, 0));
+            this.color = snakeConstants.colors.snakeTailColor;
 			this.prevPiece = prevPiece;
-			this.bufferCoords = [];
+			this.bufferCoords = [];            
         },
+        
         update: function () {
 			var currPositionOfPrevCopy = 
 				new Coords(this.prevPiece.position.X, this.prevPiece.position.Y);
 				
 			this.bufferCoords.push(currPositionOfPrevCopy);
 			if(this.bufferCoords.length > this.width + 2){
-				this.position.changeTo(this.bufferCoords.shift());
+			    this.position.changeTo(this.bufferCoords.shift());
+			    if (!this.collisionType) {
+			        this.collisionType = snakeConstants.collisionObjectsTypes.tail;
+			    }
 			}
 		}
     });
 	
-    var GameObjectsCreator = {
-        createTail: function () {
-
-        }
-    };
-
     return {
-        //TODO static and movable object will be hidden in final version
-        StaticObject: StaticObject,
-        MovableObject: MovableObject,
-
-        //theese are the objects that will show ouside
-        // or show only gameObjectsFactory
+        //theese are the objects that will show ouside       
         SnakeHead: SnakeHead,
         TailPiece: TailPiece,
         Food: Food,
         Rock: Rock,
         Wall: Wall,
-		
-		
-        // TODO:
-        // TailPiece = object,piece that takes its next position from a previous piece and 
-        // puts its current position in a property for the next
-        // tailpiece to take, each piece must have a pointer to the previous piece
-        //TailPiece: TailPiece 
-
-        //SnakeObject: SnakeObject, -- not needed - we'll have a head and it will have one property - last/previous coordinates and the first tail will have a ponter to that
-        //GameObjectsFactory: GameObjectsFactory -- an object to create other objects by given position x postion y width color collisionType
     }
 })();
 
 //TODO put in separate file at end of development
-var GameControllersNS = (function () {
+var GameControllersNS = (function ($) {
     var GameController = Class.create({
         initialize: function (drawer, gameObjectsFactory) {
+            this.points = {
+                countEaten: 0,
+                timePlayed: 0
+            };
+
+            this.fieldWidth = drawer.width;
+            this.fieldHeight = drawer.height;
+
             this.allObjects = [];
 
             //for collision detection - check all movable objects against all objects for collision
@@ -219,6 +190,7 @@ var GameControllersNS = (function () {
 
             //the object wich will draw objects
             this.drawer = drawer;
+            drawer.canvasElement.addClass(snakeConstants.gameVisualizingElementClass);
 
             //setting the class of element so it can be later used
             this.drawer.canvasElement.className =
@@ -232,16 +204,21 @@ var GameControllersNS = (function () {
 
             //initializes keypress events - attaches event handler on window!
             this.initEvents();
+
+            this.initGame();
+
+            this.gameIsOver = false;
         },
         initEvents: function () {
-            var canvasElement = this.drawer.canvasElement;
+            var canvasElement = this.drawer.canvasElement.get(0);
             if (!canvasElement.gameEnginePointer) {
                 //give a pointer to game controller for event to find
                 canvasElement.gameEnginePointer = this;
             }
 
-            jQuery(window).on('keyup', function (event) {
-                var that = jQuery('.snake-game')[0].gameEnginePointer;
+            $(window).on('keyup', function (event) {
+                var selector = '.' + snakeConstants.gameVisualizingElementClass;
+                var that = $(selector)[0].gameEnginePointer;
                 var pressedKeyCode = event.keyCode;
 
                 that.handleKeyPress(pressedKeyCode);
@@ -254,16 +231,18 @@ var GameControllersNS = (function () {
             }
         },
         gameLoop: function () {
-            //this.detectCollisions();
+            
             var that = this;
             this.gameInterval = setInterval(function () {
-				//that.generateFood(); -- random?
-				
-                that.checkForCollisions();
+				that.checkForCollisions();
 
                 that.updateElements();
 
-                that.drawElements();	
+                that.drawElements();
+
+                that.points.timePlayed += 1;
+
+                that.drawer.displayCurrentPoints(that.points.countEaten);
             }, 1000 / 60);
         },
         updateElements: function () {
@@ -281,6 +260,8 @@ var GameControllersNS = (function () {
                 this.drawer.draw(this.allObjects[i]);
             }
         },
+        
+        //**Key handling *//
         handleKeyPress: function (keyCode) {
             switch (keyCode) {
                 case window.snakeConstants.snakeKeys.up: {
@@ -327,64 +308,31 @@ var GameControllersNS = (function () {
                 this.snakeHead.direction.Y = 0;
             }
         },
+
+        /*Collisions part*/
         ///substracts coords and checks if x < standart width and y< standart width
         checkForCollisions: function () {
             var head = this.snakeHead;
             var i = 0;
             var allObjLen = this.allObjects.length;
-
+        
             for (i = 0; i < allObjLen; i++) {
+                if (this.gameIsOver) {
+                    break;
+                }
+
                 var nextObj = this.allObjects[i];
                 if (nextObj.collisionType === snakeConstants.collisionObjectsTypes.snakeHead) {
                     continue;
                 }
-
-                var theyCollide = this.checkForCollision(head, nextObj, i);
+        
+                var theyCollide = this.checkIfCollide(head, nextObj, i);
                 if (theyCollide) {
                     this.handleCollisions(head, nextObj, i);
                 }
             }
         },
-        handleCollisions: function (snakeHead, otherObj, allObjectsCurrIndex) {
-            switch (otherObj.collisionType) {
-                case snakeConstants.collisionObjectsTypes.rock:
-                case snakeConstants.collisionObjectsTypes.wall:
-                case snakeConstants.collisionObjectsTypes.tail:{
-                    this.gameOver();
-                    break;
-                }
-
-                case snakeConstants.collisionObjectsTypes.food: {
-                    var foodObj = otherObj;
-                    var tailObj = this.extendTail(snakeHead, foodObj);
-					
-					// exchange the food with the tail object in the objects array
-					this.allObjects[allObjectsCurrIndex] = tailObj; 
-					
-					this.generateFood();
-                    break;
-                }
-
-                default: break;
-            }
-
-        },
-        //Added extendTail method.
-        extendTail: function (snakeHead, foodObj) {	
-			if(!snakeHead.lastPiece){
-				snakeHead.lastPiece = snakeHead;
-			}
-            var tailpiece = new GameObjectsNS.TailPiece(foodObj.position, foodObj.width, snakeHead.lastPiece);
-			
-			snakeHead.lastPiece = tailpiece;
-			
-			return tailpiece;
-        },
-        gameOver: function () {
-            alert('Snake ate smthing it wasn\'t supposed to!');
-            clearInterval(this.gameInterval);
-        },
-        checkForCollision: function (one, other) {		
+        checkIfCollide: function (one, other) {
             var collided = false;
 
             var collideCoords = new Coords().substract(one.position, other.position);
@@ -396,13 +344,142 @@ var GameControllersNS = (function () {
 
             return collided;
         },
-		generateFood: function() {			
-			var x = parseInt(Math.random() * 190);
-			var y = parseInt(Math.random() * 190);
+        handleCollisions: function (snakeHead, otherObj, allObjectsCurrIndex) {
+            if (otherObj.prevPiece && snakeHead === otherObj.prevPiece) {
+                return;
+            }
+
+            switch (otherObj.collisionType) {
+                case snakeConstants.collisionObjectsTypes.rock:
+                case snakeConstants.collisionObjectsTypes.wall:
+                case snakeConstants.collisionObjectsTypes.tail: {
+                    this.gameOver();
+                    break;
+                }
+
+                case snakeConstants.collisionObjectsTypes.food: {
+                    var foodObj = otherObj;
+                    var tailObj = this.extendTail(snakeHead, foodObj);
+
+                    // exchange the food with the tail object in the objects array
+                    this.allObjects[allObjectsCurrIndex] = tailObj;
+
+                    this.generateFood();
+                    break;
+                }
+
+                default: break;
+            }
+
+        },        
+        extendTail: function (snakeHead, foodObj) {	
+			if(!snakeHead.lastPiece){
+				snakeHead.lastPiece = snakeHead;
+			}
+            var tailpiece = new GameObjectsNS.TailPiece(foodObj.position, foodObj.width, snakeHead.lastPiece);
 			
-			var newFood = new GameObjectsNS.Food(new Coords(x, y), snakeConstants.standartWidthOfElements);
+			snakeHead.lastPiece = tailpiece;
+			
+			this.points.countEaten += 1;;
+			return tailpiece;
+        },
+        gameOver: function () {
+            clearInterval(this.gameInterval);
+            this.gameIsOver = true;
+            alert('Snake ate smthing it wasn\'t supposed to!');
+            var name = prompt("your name");
+
+            this.saveResult(name);
+
+            $(window).off('keyup');
+        },
+    
+        //*Initial generating*//
+        generateFood: function () {
+		    var newFood = new GameObjectsNS.Food(this.generateRandomPosition(),
+                snakeConstants.standartWidthOfElements);
+
 			this.addObject(newFood);			
-		}
+		},
+		generateRandomPosition: function () {            
+
+		    var x = parseInt(Math.random() * (this.fieldWidth - 2 * snakeConstants.standartWidthOfElements) + snakeConstants.standartWidthOfElements);
+		    var y = parseInt(Math.random() * (this.fieldHeight - 2 * snakeConstants.standartWidthOfElements) + snakeConstants.standartWidthOfElements);
+
+		    return new Coords(x, y);
+		},
+		surroundWithWall: function () {
+		    var standartWidth = snakeConstants.standartWidthOfElements;
+		    var maxX = this.fieldWidth - standartWidth;
+		    var maxY = this.fieldHeight - standartWidth;
+
+		    for (var x = 0; x <= this.fieldWidth; x += standartWidth) {
+		        var nextWallTop = new GameObjectsNS.Wall(new Coords(x, 0), standartWidth);
+		        var nextWallBottom = new GameObjectsNS.Wall(new Coords(x, maxY), standartWidth);
+		        this.addObject(nextWallTop);
+		        this.addObject(nextWallBottom);
+		    }
+
+		    for (var y = 0; y < this.fieldHeight; y += standartWidth) {
+		        var nextWallLeft = new GameObjectsNS.Wall(new Coords(0, y), standartWidth);
+		        var nextWallRight = new GameObjectsNS.Wall(new Coords(maxX, y), standartWidth);
+		        this.addObject(nextWallLeft);
+		        this.addObject(nextWallRight);
+		    }
+		},
+		genSnakeHead: function () {
+		    var snakePos = this.generateRandomPosition();
+		    var snakeWidth = snakeConstants.standartWidthOfElements;
+		    var snakeDirection = new Coords(1, 0);
+		    var snakeHead = new GameObjectsNS.SnakeHead(snakePos, snakeWidth, snakeDirection);
+
+		    this.addObject(snakeHead);
+		    this.snakeHead = snakeHead;
+
+		}, genRocks: function () {
+		    var numberOfRocks = parseInt(Math.random() * 5);
+
+		    for (var i = 0; i < numberOfRocks; i++) {
+		        var nextRockPosition = this.generateRandomPosition();
+		        var nextRockWidth = snakeConstants.standartWidthOfElements;
+		        var nextRock = new GameObjectsNS.Rock(nextRockPosition, nextRockWidth);
+
+		        this.addObject(nextRock);
+		    }
+		},
+		initGame: function () {
+		    this.surroundWithWall();
+		    this.genSnakeHead();
+		    this.genRocks();
+		    this.generateFood();
+		},
+
+        //**Finalizing result*//
+		saveResult: function (name) {
+
+            name = name || "Snake eater Anonimous!"
+		    var result = {
+		        "name": name,
+		        "countEaten": this.points.countEaten,
+		        "timePlayed": this.points.timePlayed
+		    }
+
+
+		    var currResults = this.getResults();
+		    currResults.push(result);
+
+		    currResults.sort(function (a, b) { return b.countEaten - a.countEaten });
+
+		    localStorage.setItem(snakeConstants.localStorageName, JSON.stringify(currResults));
+		},
+		getResults: function () {
+		    var currResult = JSON.parse(localStorage.getItem(snakeConstants.localStorageName));
+		    if (!currResult) {
+		        currResult = [];
+		    }
+
+		    return currResult;
+		}		
     });
 
     return {
@@ -411,14 +488,17 @@ var GameControllersNS = (function () {
         //MenuController: MenuController,
     }
 
-})();
+})(jQuery);
 
 //TODO put in separate file at end of development
-var DrawersNS = (function () {
+var DrawersNS = (function ($) {
     var CanvasDrawer = Class.create({
         initialize: function (cavasElementSelector) {
-            this.canvasElement = jQuery(cavasElementSelector).get(0)
-            this.ctx = this.canvasElement.getContext('2d');
+            this.canvasElement = $(cavasElementSelector);
+            this.ctx = this.canvasElement.get(0).getContext('2d');
+
+            this.width = parseInt(this.canvasElement.css('width'));
+            this.height = parseInt(this.canvasElement.css('height'));
         },
         draw: function (gameObject) {
             //just in case
@@ -436,6 +516,12 @@ var DrawersNS = (function () {
 
             //restores the ctx as it was before step - this.ctx.save();
             this.ctx.restore();
+        },
+        displayCurrentPoints: function (points) {
+            this.ctx.save();            
+            this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            this.ctx.fillText("Points:" + points, this.width / 2, 20);
+            this.ctx.restore();
         }
     });
 
@@ -443,67 +529,17 @@ var DrawersNS = (function () {
         CanvasDrawer: CanvasDrawer,
         //MenuDrawer: MenuDrawer - maybe wont be needed - use DOM elements instead of drawing in 
     }
-})();
+})(jQuery);
+
 
 //TODO put in separate file at end of development
 window.onload = function () {
     jQuery('#canvas').css('border', '1px solid blue');
 	
-	
     var drawer = new DrawersNS.CanvasDrawer('#canvas');
 
     var controller = new GameControllersNS.GameController(drawer);
 
-    var snakeHeadPosition = new Coords(25, 25);
-    var snakeHeadDirection = new Coords(1, 0);
-
-    var snakeHead = new GameObjectsNS.SnakeHead(snakeHeadPosition, 10, snakeHeadDirection);
-    snakeHead.previousPosition = snakeHeadPosition;
-
-    var food = new GameObjectsNS.Food(new Coords(60, 50), snakeConstants.standartWidthOfElements);
-    var food2 = new GameObjectsNS.Food(new Coords(10, 40), snakeConstants.standartWidthOfElements);
-    var food3 = new GameObjectsNS.Food(new Coords(15, 20), snakeConstants.standartWidthOfElements);
-
-    var rock1 = new GameObjectsNS.Rock(new Coords(35, 45), snakeConstants.standartWidthOfElements);
-    //var food4 = new GameObjectsNS.Food(new Coords(60, 10), 10);
-    //var food5 = new GameObjectsNS.Food(new Coords(45, 15), 10);
-    //idea -> var factory = new GameObjectsNS.Factory();
-    //var newFood = factory(position, width, color, collisionObjectType, //eventually direction//)
-
-    var standartWidth = snakeConstants.standartWidthOfElements
-    var lenX = 200 - standartWidth;
-    var lenY = 200 - standartWidth;
-
-    controller.addObject(snakeHead);
-    //var foods = [food, food2, food3];
-    //for (var i = 0; i < foods.length; i++) {
-    //    controller.addObject(foods[i]);
-    //}
-    //controller.addObject(new GameObjectsNS.Wall());
-    controller.addObject(food)
-    controller.addObject(rock1);
-    controller.snakeHead = snakeHead;
-
-
-    //TODO - Put in separate method - create walls!!
-    for (var x = 0; x <= lenX; x += standartWidth) {
-        var nextWallTop = new GameObjectsNS.Wall(new Coords(x, 0), standartWidth);
-        var nextWallBottom = new GameObjectsNS.Wall(new Coords(x, 190), standartWidth);
-        controller.addObject(nextWallTop);
-        controller.addObject(nextWallBottom);
-    }
-
-    for (var y = 0; y < lenY; y += standartWidth) {
-        var nextWallLeft = new GameObjectsNS.Wall(new Coords(0, y), standartWidth);
-        var nextWallRight = new GameObjectsNS.Wall(new Coords(190, y), standartWidth);
-        controller.addObject(nextWallLeft);
-        controller.addObject(nextWallRight);
-    }
-	
-	//var  taiPiece1 = new GameObjectsNS.TailPiece(
-	//	new Coords(snakeHeadPosition.X - 30, snakeHeadPosition.Y * 2), standartWidth, snakeHead);
-	//controller.addObject(taiPiece1);												
-	
-	
+    
     controller.gameLoop();
 };
