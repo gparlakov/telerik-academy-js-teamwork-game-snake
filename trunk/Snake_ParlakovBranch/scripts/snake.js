@@ -51,11 +51,9 @@ var Coords = Class.create({
 
         return equals;
     },
-    add: function (coorObjOne, coordsObjOther) {
-        var addedX = coordsObjOne.X + coordsObjOther.X;
-        var addedY = coordsObjOne.Y + coordsObjOther.Y;
-
-        return new Coords(addedX, addedY);
+    add: function (coordsObjOther) {
+       this.X += coordsObjOther.X;
+	   this.Y += coordsObjOther.Y;
     },
     substract: function (coordsObjOne, coordsObjOther) {
         var substractedX = coordsObjOne.X - coordsObjOther.X;
@@ -67,6 +65,22 @@ var Coords = Class.create({
         this.X = coorObj.X;
         this.Y = coorObj.Y;
     }
+});
+
+//stores last few ( ten coordinates and gives them to the next tailpiece
+var PreviousCoordsArray = Class.create({
+	initialize: function(widthOfOBject) {		
+		this.lastFewCoords = [];
+	},
+	push: function (coordObj) {
+		if(this.lastFewCoords.length >= 10){
+			this.lastFewCoords.unshift();
+		}		
+		this.lastFewCoords.push(coordObj);
+	},
+	dequeue: function() {
+		return this.lastFewCoords.unshift();
+	}
 });
 
 //TODO put in separate file at end of development
@@ -104,9 +118,8 @@ var GameObjectsNS = (function () {
             this.type = window.snakeConstants.objectTypes.movableObject;
         },
         update: function () {
-            this.position.X += this.direction.X;
-            this.position.Y += this.direction.Y;
-        }
+			this.position.add(this.direction); 
+		}
     });
 
     var Food = Class.create(StaticObject, {
@@ -134,7 +147,7 @@ var GameObjectsNS = (function () {
         initialize: function ($super, position, width) {
             $super(position, width);
             this.color = snakeConstants.colors.rockColor;
-            this.collisionType = window.snakeConstants.collisionObjectsTypes.wall;
+            this.collisionType = window.snakeConstants.collisionObjectsTypes.rock;
         }
     });
 
@@ -143,40 +156,27 @@ var GameObjectsNS = (function () {
             $super(position, width, direction);
             this.collisionType = window.snakeConstants.collisionObjectsTypes.snakeHead;
             this.color = window.snakeConstants.colors.snakeHeadColor;
-        },
-    });
-
-    // added SnakeTail object
-    var SnakeTail = Class.create(MovableObject, {
-        initialize: function ($super, position, width, nextTail) {
-            $super(position, width, new Coords(nextTail.direction.X, nextTail.direction.Y));
-            this.collisionType = window.snakeConstants.collisionObjectsTypes.tail;
-            this.color = window.snakeConstants.colors.snakeTailColor;
-            this.nextTail = nextTail;
-        },
-        update: function () {
-            this.position.X += this.direction.X;
-            this.position.Y += this.direction.Y;
-
-            //If the direction of the next tail changes
-            if (!this.direction.equals(this.nextTail.direction)) {
-                if (this.direction.X > 0 && (this.position.X + this.direction.X) > this.nextTail.position.X
-                    || (this.direction.X < 0 && (this.position.X + this.direction.X) < this.nextTail.position.X)
-                    || (this.direction.Y > 0 && (this.position.Y + this.direction.Y) > this.nextTail.position.Y)
-                    || (this.direction.Y < 0 && (this.position.Y + this.direction.Y) < this.nextTail.position.Y)) {
-                    this.direction = new Coords(this.nextTail.direction.X, this.nextTail.direction.Y);
-                }
-            }
         }
     });
 
     //start new type of piece
     var TailPiece = Class.create(MovableObject, {
         initialize: function ($super, position, width, prevPiece) {
-            $super(position, width);
+            $super(position, width, new Coords(0,0));
+			this.prevPiece = prevPiece;
+			this.bufferCoords = [];
         },
-        update: function () { }
+        update: function () {
+			var currPositionOfPrevCopy = 
+				new Coords(this.prevPiece.position.X, this.prevPiece.position.Y);
+				
+			this.bufferCoords.push(currPositionOfPrevCopy);
+			if(this.bufferCoords.length > this.width + 2){
+				this.position.changeTo(this.bufferCoords.shift());
+			}
+		}
     });
+	
     var GameObjectsCreator = {
         createTail: function () {
 
@@ -191,11 +191,12 @@ var GameObjectsNS = (function () {
         //theese are the objects that will show ouside
         // or show only gameObjectsFactory
         SnakeHead: SnakeHead,
-        SnakeTail: SnakeTail,
+        TailPiece: TailPiece,
         Food: Food,
         Rock: Rock,
         Wall: Wall,
-
+		
+		
         // TODO:
         // TailPiece = object,piece that takes its next position from a previous piece and 
         // puts its current position in a property for the next
@@ -256,13 +257,13 @@ var GameControllersNS = (function () {
             //this.detectCollisions();
             var that = this;
             this.gameInterval = setInterval(function () {
-
+				//that.generateFood(); -- random?
+				
                 that.checkForCollisions();
 
                 that.updateElements();
 
-                that.drawElements();
-
+                that.drawElements();	
             }, 1000 / 60);
         },
         updateElements: function () {
@@ -338,13 +339,13 @@ var GameControllersNS = (function () {
                     continue;
                 }
 
-                var theyCollide = this.checkForCollision(head, nextObj);
+                var theyCollide = this.checkForCollision(head, nextObj, i);
                 if (theyCollide) {
-                    this.handleCollisions(head, nextObj);
+                    this.handleCollisions(head, nextObj, i);
                 }
             }
         },
-        handleCollisions: function (snakeHead, otherObj) {
+        handleCollisions: function (snakeHead, otherObj, allObjectsCurrIndex) {
             switch (otherObj.collisionType) {
                 case snakeConstants.collisionObjectsTypes.rock:
                 case snakeConstants.collisionObjectsTypes.wall:
@@ -355,7 +356,12 @@ var GameControllersNS = (function () {
 
                 case snakeConstants.collisionObjectsTypes.food: {
                     var foodObj = otherObj;
-                    this.extendTail(snakeHead, foodObj);
+                    var tailObj = this.extendTail(snakeHead, foodObj);
+					
+					// exchange the food with the tail object in the objects array
+					this.allObjects[allObjectsCurrIndex] = tailObj; 
+					
+					this.generateFood();
                     break;
                 }
 
@@ -364,33 +370,21 @@ var GameControllersNS = (function () {
 
         },
         //Added extendTail method.
-        extendTail: function (snakeHead, foodObj) {
-            var tailPosition = new Coords(this.snakeHead.position.X, this.snakeHead.position.Y);
-            var snakeDirection = this.snakeHead.direction;
-
-            var newTail = new GameObjectsNS.SnakeTail(tailPosition, 10, this.snakeHead);
-
-            if (snakeDirection.X > 0 || snakeDirection.X < 0) {
-                this.snakeHead.position.X = foodObj.position.X;
-                tailPosition.X -= snakeDirection.X;
-            }
-            else if (snakeDirection.Y > 0 || snakeDirection.Y < 0) {
-                this.snakeHead.position.Y = foodObj.position.Y;
-                tailPosition.Y -= snakeDirection.Y;
-            }
-
-            if (this.snakeHead.lastTail) {
-                this.snakeHead.lastTail.nextTail = newTail;
-            }
-            this.snakeHead.lastTail = newTail;
-
-            this.addObject(newTail);
+        extendTail: function (snakeHead, foodObj) {	
+			if(!snakeHead.lastPiece){
+				snakeHead.lastPiece = snakeHead;
+			}
+            var tailpiece = new GameObjectsNS.TailPiece(foodObj.position, foodObj.width, snakeHead.lastPiece);
+			
+			snakeHead.lastPiece = tailpiece;
+			
+			return tailpiece;
         },
         gameOver: function () {
             alert('Snake ate smthing it wasn\'t supposed to!');
             clearInterval(this.gameInterval);
         },
-        checkForCollision: function (one, other) {
+        checkForCollision: function (one, other) {		
             var collided = false;
 
             var collideCoords = new Coords().substract(one.position, other.position);
@@ -401,7 +395,14 @@ var GameControllersNS = (function () {
             }
 
             return collided;
-        }
+        },
+		generateFood: function() {			
+			var x = parseInt(Math.random() * 190);
+			var y = parseInt(Math.random() * 190);
+			
+			var newFood = new GameObjectsNS.Food(new Coords(x, y), snakeConstants.standartWidthOfElements);
+			this.addObject(newFood);			
+		}
     });
 
     return {
@@ -447,7 +448,8 @@ var DrawersNS = (function () {
 //TODO put in separate file at end of development
 window.onload = function () {
     jQuery('#canvas').css('border', '1px solid blue');
-
+	
+	
     var drawer = new DrawersNS.CanvasDrawer('#canvas');
 
     var controller = new GameControllersNS.GameController(drawer);
@@ -497,6 +499,11 @@ window.onload = function () {
         controller.addObject(nextWallLeft);
         controller.addObject(nextWallRight);
     }
-
+	
+	//var  taiPiece1 = new GameObjectsNS.TailPiece(
+	//	new Coords(snakeHeadPosition.X - 30, snakeHeadPosition.Y * 2), standartWidth, snakeHead);
+	//controller.addObject(taiPiece1);												
+	
+	
     controller.gameLoop();
 };
