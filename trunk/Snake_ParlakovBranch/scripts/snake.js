@@ -22,7 +22,8 @@ window.snakeConstants = {
         snakeTailColor: 'green',
         wallColor: 'black',
         rockColor: 'brown',
-        foodColor: 'red'
+        foodColor: 'red',
+        textColor: 'rgba(255, 0, 0, 0.3)'
     },
     /*A = keycode 65, a = keycode 97*/
     /*  left = leyCode 37
@@ -37,6 +38,7 @@ window.snakeConstants = {
         down: 40
     },
     localStorageName: "snake-results-local",
+    rocksCount: 20
 }
 
 var Coords = Class.create({
@@ -69,7 +71,7 @@ var Coords = Class.create({
 });
 
 //TODO put in separate file at end of development
-var GameObjectsNS = (function () {
+var gameObjectsNS = (function () {
 
     var GameObject = Class.create({
         initialize: function (position, width) {
@@ -172,9 +174,9 @@ var GameObjectsNS = (function () {
 })();
 
 //TODO put in separate file at end of development
-var GameControllersNS = (function ($) {
+var gameControllersNS = (function ($) {
     var GameController = Class.create({
-        initialize: function (drawer, gameObjectsFactory) {
+        initialize: function (drawer, resultHandler) {
             this.points = {
                 countEaten: 0,
                 timePlayed: 0
@@ -184,9 +186,6 @@ var GameControllersNS = (function ($) {
             this.fieldHeight = drawer.height;
 
             this.allObjects = [];
-
-            //for collision detection - check all movable objects against all objects for collision
-            this.movableObjects = [];
 
             //the object wich will draw objects
             this.drawer = drawer;
@@ -208,6 +207,8 @@ var GameControllersNS = (function ($) {
             this.initGame();
 
             this.gameIsOver = false;
+
+            this.resultHandler = resultHandler;
         },
         initEvents: function () {
             var canvasElement = this.drawer.canvasElement.get(0);
@@ -225,10 +226,7 @@ var GameControllersNS = (function ($) {
             });
         },
         addObject: function (gameObject) {
-            this.allObjects.push(gameObject);
-            if (gameObject.type === window.snakeConstants.objectTypes.movableObject) {
-                this.movableObjects.push(gameObject);
-            }
+            this.allObjects.push(gameObject);            
         },
         gameLoop: function () {
             
@@ -309,8 +307,7 @@ var GameControllersNS = (function ($) {
             }
         },
 
-        /*Collisions part*/
-        ///substracts coords and checks if x < standart width and y< standart width
+        /*Collisions part*/        
         checkForCollisions: function () {
             var head = this.snakeHead;
             var i = 0;
@@ -332,6 +329,8 @@ var GameControllersNS = (function ($) {
                 }
             }
         },
+        // substracts coords and returns true
+        // if its X and Y are smaller than the first elements' width
         checkIfCollide: function (one, other) {
             var collided = false;
 
@@ -343,8 +342,9 @@ var GameControllersNS = (function ($) {
             }
 
             return collided;
-        },
+        },        
         handleCollisions: function (snakeHead, otherObj, allObjectsCurrIndex) {
+            // skips the first tail object beacuse of game phisics
             if (otherObj.prevPiece && snakeHead === otherObj.prevPiece) {
                 return;
             }
@@ -371,12 +371,12 @@ var GameControllersNS = (function ($) {
                 default: break;
             }
 
-        },        
+        },
         extendTail: function (snakeHead, foodObj) {	
 			if(!snakeHead.lastPiece){
 				snakeHead.lastPiece = snakeHead;
 			}
-            var tailpiece = new GameObjectsNS.TailPiece(foodObj.position, foodObj.width, snakeHead.lastPiece);
+            var tailpiece = new gameObjectsNS.TailPiece(foodObj.position, foodObj.width, snakeHead.lastPiece);
 			
 			snakeHead.lastPiece = tailpiece;
 			
@@ -386,25 +386,26 @@ var GameControllersNS = (function ($) {
         gameOver: function () {
             clearInterval(this.gameInterval);
             this.gameIsOver = true;
-            alert('Snake ate smthing it wasn\'t supposed to!');
-            var name = prompt("your name");
+           
+            var name = prompt("The snake is dead. Your name for the investigation:");
 
-            this.saveResult(name);
+            this.resultHandler.saveResult(name, this.points);
 
             $(window).off('keyup');
         },
     
         //*Initial generating*//
-        generateFood: function () {
-		    var newFood = new GameObjectsNS.Food(this.generateRandomPosition(),
-                snakeConstants.standartWidthOfElements);
+       
+        generateRandomPosition: function () {
+            var standartWidth = snakeConstants.standartWidthOfElements;
+		    var minX = standartWidth * 2;
+		    var minY = standartWidth * 2;
+		    var maxX = this.fieldWidth - standartWidth * 2;
+		    var maxY = this.fieldHeight - standartWidth * 2;
 
-			this.addObject(newFood);			
-		},
-		generateRandomPosition: function () {            
 
-		    var x = parseInt(Math.random() * (this.fieldWidth - 2 * snakeConstants.standartWidthOfElements) + snakeConstants.standartWidthOfElements);
-		    var y = parseInt(Math.random() * (this.fieldHeight - 2 * snakeConstants.standartWidthOfElements) + snakeConstants.standartWidthOfElements);
+		    var x = parseInt(Math.random() * (maxX - minX) + minX);
+		    var y = parseInt(Math.random() * (maxY - minY) + minY);
 
 		    return new Coords(x, y);
 		},
@@ -414,15 +415,15 @@ var GameControllersNS = (function ($) {
 		    var maxY = this.fieldHeight - standartWidth;
 
 		    for (var x = 0; x <= this.fieldWidth; x += standartWidth) {
-		        var nextWallTop = new GameObjectsNS.Wall(new Coords(x, 0), standartWidth);
-		        var nextWallBottom = new GameObjectsNS.Wall(new Coords(x, maxY), standartWidth);
+		        var nextWallTop = new gameObjectsNS.Wall(new Coords(x, 0), standartWidth);
+		        var nextWallBottom = new gameObjectsNS.Wall(new Coords(x, maxY), standartWidth);
 		        this.addObject(nextWallTop);
 		        this.addObject(nextWallBottom);
 		    }
 
 		    for (var y = 0; y < this.fieldHeight; y += standartWidth) {
-		        var nextWallLeft = new GameObjectsNS.Wall(new Coords(0, y), standartWidth);
-		        var nextWallRight = new GameObjectsNS.Wall(new Coords(maxX, y), standartWidth);
+		        var nextWallLeft = new gameObjectsNS.Wall(new Coords(0, y), standartWidth);
+		        var nextWallRight = new gameObjectsNS.Wall(new Coords(maxX, y), standartWidth);
 		        this.addObject(nextWallLeft);
 		        this.addObject(nextWallRight);
 		    }
@@ -431,59 +432,73 @@ var GameControllersNS = (function ($) {
 		    var snakePos = this.generateRandomPosition();
 		    var snakeWidth = snakeConstants.standartWidthOfElements;
 		    var snakeDirection = new Coords(1, 0);
-		    var snakeHead = new GameObjectsNS.SnakeHead(snakePos, snakeWidth, snakeDirection);
+		    var snakeHead = new gameObjectsNS.SnakeHead(snakePos, snakeWidth, snakeDirection);
 
 		    this.addObject(snakeHead);
 		    this.snakeHead = snakeHead;
 
-		}, genRocks: function () {
-		    var numberOfRocks = parseInt(Math.random() * 5);
+		},
+		genRocks: function () {
+		    var numberOfRocks = parseInt(Math.random() * snakeConstants.rocksCount);
 
 		    for (var i = 0; i < numberOfRocks; i++) {
 		        var nextRockPosition = this.generateRandomPosition();
 		        var nextRockWidth = snakeConstants.standartWidthOfElements;
-		        var nextRock = new GameObjectsNS.Rock(nextRockPosition, nextRockWidth);
+		        var nextRock = new gameObjectsNS.Rock(nextRockPosition, nextRockWidth);
 
 		        this.addObject(nextRock);
 		    }
 		},
+		generateFood: function () {
+		    var newFood = new gameObjectsNS.Food(this.generateRandomPosition(),
+                snakeConstants.standartWidthOfElements);
+
+		    this.addObject(newFood);
+		},
 		initGame: function () {
 		    this.surroundWithWall();
-		    this.genSnakeHead();
 		    this.genRocks();
 		    this.generateFood();
-		},
+		    this.genSnakeHead();
+		}
+		
+    });
 
-        //**Finalizing result*//
-		saveResult: function (name) {
-
+    // this is the object that can save and load results int localStorage    
+    var resultsHandler = Class.create({
+        initialize: function () { },
+        //takse name and an points obj.countEaten, obj.timePlayed
+        saveResult: function (name, pointsObj) {
             name = name || "Snake eater Anonimous!"
-		    var result = {
-		        "name": name,
-		        "countEaten": this.points.countEaten,
-		        "timePlayed": this.points.timePlayed
-		    }
 
+            var result = {
+                "name": name,
+                "countEaten": pointsObj.countEaten,
+                "timePlayed": pointsObj.timePlayed
+            }
+            
+            var currResults = this.getResults();
+            currResults.push(result);
 
-		    var currResults = this.getResults();
-		    currResults.push(result);
+            currResults.sort(function (a, b) { return b.countEaten - a.countEaten });
 
-		    currResults.sort(function (a, b) { return b.countEaten - a.countEaten });
+            localStorage.setItem(snakeConstants.localStorageName, JSON.stringify(currResults));
+        },
+        // returns an array of objects with obj.name, obj.countEaten, obj.timePlayed
+        getResults: function () {
+            var currResult = JSON.parse(localStorage.getItem(snakeConstants.localStorageName));
+            if (!currResult) {
+                currResult = [];
+            }
 
-		    localStorage.setItem(snakeConstants.localStorageName, JSON.stringify(currResults));
-		},
-		getResults: function () {
-		    var currResult = JSON.parse(localStorage.getItem(snakeConstants.localStorageName));
-		    if (!currResult) {
-		        currResult = [];
-		    }
+            return currResult;
+        }
 
-		    return currResult;
-		}		
     });
 
     return {
         GameController: GameController,
+        resultsHandler: resultsHandler
         //TODO:
         //MenuController: MenuController,
     }
@@ -491,7 +506,7 @@ var GameControllersNS = (function ($) {
 })(jQuery);
 
 //TODO put in separate file at end of development
-var DrawersNS = (function ($) {
+var drawersNS = (function ($) {
     var CanvasDrawer = Class.create({
         initialize: function (cavasElementSelector) {
             this.canvasElement = $(cavasElementSelector);
@@ -519,8 +534,8 @@ var DrawersNS = (function ($) {
         },
         displayCurrentPoints: function (points) {
             this.ctx.save();            
-            this.ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-            this.ctx.fillText("Points:" + points, this.width / 2, 20);
+            this.ctx.fillStyle = snakeConstants.colors.textColor;
+            this.ctx.fillText("Points:" + points, this.width / 2 - 20, 20);
             this.ctx.restore();
         }
     });
@@ -532,13 +547,15 @@ var DrawersNS = (function ($) {
 })(jQuery);
 
 
-//TODO put in separate file at end of development
+//TODO this will be the function to call on menu callback - when start game is pressed
 window.onload = function () {
     jQuery('#canvas').css('border', '1px solid blue');
 	
-    var drawer = new DrawersNS.CanvasDrawer('#canvas');
+    var resultsHandler = new gameControllersNS.resultsHandler()
 
-    var controller = new GameControllersNS.GameController(drawer);
+    var drawer = new drawersNS.CanvasDrawer('#canvas');
+
+    var controller = new gameControllersNS.GameController(drawer, resultsHandler);
 
     
     controller.gameLoop();
