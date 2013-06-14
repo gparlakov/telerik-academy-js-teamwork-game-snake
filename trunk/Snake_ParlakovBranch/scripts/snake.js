@@ -383,17 +383,43 @@ var gameControllersNS = (function ($) {
 			this.points.countEaten += 1;;
 			return tailpiece;
         },
-        gameOver: function () {
-            clearInterval(this.gameInterval);
-            this.gameIsOver = true;
+        //gameOver: function () {
+        //    clearInterval(this.gameInterval);
+        //    this.gameIsOver = true;
            
-            var name = prompt("The snake is dead. Your name for the investigation:");
+        //    //var name = prompt("The snake is dead. Your name for the investigation:");
+        //    var gameOverScren = document.createElement("div");
+            
+        //    this.resultHandler.saveResult(name, this.points);
 
-            this.resultHandler.saveResult(name, this.points);
+        //    $(window).off('keyup');
+        //},
+        gameOver: function () {
+            //TODO: SUBMIT onclick??
+            //this appends massage to div>span
+            var massage = $("#gameOverMassage");
+            massage.text("Game Over your points: " + this.points.countEaten);
+            var gameOverBar = $('div.gameOver');
 
-            $(window).off('keyup');
-        },
-    
+            //This calls the gameOver menu
+			gameOverBar.show(500, function() {
+			    $( this ).animate({top:250}, 'slow');
+			});
+            
+            //this appends tweet event to #tweetIt btn
+            $("#tweetIt").click(function(ev) {
+                var tweetMassage = "I played snake :D";
+                if (tweetMassage.length > 140) {
+                    alert("tweets can't be so large");
+                } else {
+                    var tweetLink = 'http://twitter.com/home?status=' + encodeURIComponent(tweetMassage);
+                    window.open(tweetLink, "_blank");
+                }
+            });
+
+
+			clearInterval(this.gameInterval);
+},
         //*Initial generating*//
        
         generateRandomPosition: function () {
@@ -475,7 +501,7 @@ var gameControllersNS = (function ($) {
                 "name": name,
                 "countEaten": pointsObj.countEaten,
                 "timePlayed": pointsObj.timePlayed
-            }
+            };
             
             var currResults = this.getResults();
             currResults.push(result);

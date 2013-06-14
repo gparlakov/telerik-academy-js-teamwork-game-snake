@@ -369,8 +369,9 @@ var GameControllersNS = (function () {
             this.addObject(newTail);
         },
         gameOver: function () {
-            alert('Snake ate smthing it wasn\'t supposed to!');
+            alert('shit');
             clearInterval(this.gameInterval);
+            
         }
     });
 
@@ -393,7 +394,7 @@ var DrawersNS = (function () {
             //just in case
             this.ctx.save();
             if (gameObject.collisionType == window.snakeConstants.collisionObjectsTypes.wall) {
-                return
+                return;
             }
             //set only for testing purposes //TODO remove after ..
             this.ctx.fillStyle = "red";
@@ -413,8 +414,11 @@ var DrawersNS = (function () {
     return {
         CanvasDrawer: CanvasDrawer,
         //MenuDrawer: MenuDrawer - maybe wont be needed - use DOM elements instead of drawing in 
-    }
+    };
 })();
+
+
+
 
 //TODO put in separate file at end of development
 window.onload = function () {
