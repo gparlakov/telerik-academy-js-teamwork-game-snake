@@ -57,8 +57,9 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="script\gameobject-namespace.js" />
+    <Content Include="script\prototype.js" />
     <Content Include="script\snake-gameobject-test.js" />
-    <Content Include="script\snake.js" />
     <Content Include="style\qunit-css.css" />
     <Content Include="script\qunit.js" />
     <Content Include="game-objects-test.html" />
