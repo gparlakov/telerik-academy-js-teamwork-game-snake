@@ -7,6 +7,11 @@
     <script src="scripts/prototype.js"></script>    
     <script src="scripts/snake.js"></script>
     <style>
+        .backTo > img {
+            padding-right: -40px;
+            display: inline;
+            height: 20px;
+        }
         #gameOver {
             position: absolute;
             top: 100px;
@@ -86,6 +91,21 @@
            font-weight: bold;
            text-align: left;
         }
+        table {
+            position: absolute;
+            top: 66px;
+            left: 214px;
+            background: green;
+            width: 322px;
+            height: 414px;
+        }
+        td {
+            background: white;
+        }
+        table > img {
+            position: absolute;
+            left: 3300px;
+        }
     </style>
 </head>
     <body>
@@ -104,7 +124,7 @@
                 <ul>
                     <li>
                         <input type="button" id="startGame" value="Play" />
-<!--                        <div id="startGame">Play</div>-->
+                        <!--                        <div id="startGame">Play</div>-->
                     </li>
                     <li>
                         <input type="button" id="scoreBoard" value="Scores" />
@@ -117,12 +137,77 @@
                     </li>
                 </ul>
             </div>
+            <div id="showScores" class="hidden">
+                <table id="sccoreTable">
+                    <tr>
+                        <td>Name</td>
+                        <td>Score</td>
+                        <td>
+                            Time Played
+                            
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>   
+                    <tr>    
+                        <td>3</td>
+                        <td>3</td>
+                        <td>3
+                            <a class="backTo">
+                                <img src="img/backTo.png" /></a>
+                        </td>
+                    </tr> 
+                </table>
+            </div>
             <div id="gameOver" class="hidden">
-                <span id="Span1"></span>
+                <span id="Span1">Game Over</span>
                 <form id="Form1" action="" method="POST">
                     <input type="text" name="fname" placeholder="your name here">
                     <input type="button" value="Submit"> <br> 
-                                                         <input type="button" id="Button1" value="Share on Tweeter"/>
+                    <input type="button" id="tweetIt" value="Share on Tweeter"/>
                 </form>
             </div>
             <div ></div>

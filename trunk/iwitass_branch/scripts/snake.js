@@ -402,12 +402,12 @@ var gameControllersNS = (function ($) {
             var gameOverBar = $('div#gameOver');
 
             //This calls the gameOver menu
-			//gameOverBar.show(500, function() {
-			//    $( this ).animate({top:250}, 'slow');
-			//});
+			gameOverBar.show(500, function() {
+			    $( this ).animate({top:250}, 'slow');
+			});
             
             //this appends tweet event to #tweetIt btn
-            $("#tweetIt").click(function(ev) {
+            $("#tweetIt").click(function() {
                 var tweetMassage = "I played snake :D";
                 if (tweetMassage.length > 140) {
                     alert("tweets can't be so large");
@@ -416,7 +416,7 @@ var gameControllersNS = (function ($) {
                     window.open(tweetLink, "_blank");
                 }
             });
-            gameOverBar.dialog();
+            //gameOverBar.dialog();
 
 			clearInterval(this.gameInterval);
 },
@@ -632,8 +632,19 @@ window.onload = function () {
             var body = $("body");
             body.css({ 'backgroundImage': "url(img/tabletOn.jpg)" });
             startMenu.show();
+            $("#showScores").hide();
         }
     });
+
+    var scoreBtn = $("#scoreBoard");
+    scoreBtn.on("click", function() {
+        $("#showScores").show();
+    });
+
+    var scoreBtnBack = $(".backTo");
+    scoreBtnBack.on("click",function() {
+        $("#showScores").hide();
+    })
 
 };
 
