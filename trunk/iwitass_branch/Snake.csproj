@@ -57,6 +57,11 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="img\hoverBtn.jpg" />
+    <Content Include="img\offBtn.jpg" />
+    <Content Include="img\onBtn.jpg" />
+    <Content Include="img\tabletOff.jpg" />
+    <Content Include="img\tabletOn.jpg" />
     <Content Include="packages.config" />
     <None Include="scripts\jquery-2.0.1.intellisense.js" />
     <Content Include="scripts\jquery-2.0.1.js" />
@@ -77,9 +82,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="img\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

@@ -569,15 +569,29 @@ var drawersNS = (function ($) {
     return {
         CanvasDrawer: CanvasDrawer,
         //MenuDrawer: MenuDrawer - maybe wont be needed - use DOM elements instead of drawing in 
-    }
+    };
 })(jQuery);
 
 
 //TODO this will be the function to call on menu callback - when start game is pressed
-window.onload = function () {
-    jQuery('#canvas').css('border', '1px solid blue');
+//window.onload = function () {
+//    jQuery('#canvas').css('border', '1px solid blue');
 	
-    var resultsHandler = new gameControllersNS.resultsHandler()
+//    var resultsHandler = new gameControllersNS.resultsHandler()
+
+//    var drawer = new drawersNS.CanvasDrawer('#canvas');
+
+//    var controller = new gameControllersNS.GameController(drawer, resultsHandler);
+
+    
+//    controller.gameLoop();
+//};
+
+// START GAME
+var startGame = function () {
+    jQuery('#canvas').css('border', '1px solid blue');
+
+    var resultsHandler = new gameControllersNS.resultsHandler();
 
     var drawer = new drawersNS.CanvasDrawer('#canvas');
 
@@ -586,3 +600,54 @@ window.onload = function () {
     
     controller.gameLoop();
 };
+
+// START BUTTON
+
+
+
+
+window.onload = function () {
+   
+    var $ = jQuery.noConflict();
+    var _startGame = $("#startGame");
+    _startGame.click(function() {
+        startGame();
+        startMenu.hide();
+    });
+    var startMenu = $("#startMenu");
+    var startBtn = $("#startBtn>img");
+    startBtn.on("click", function() {
+        var $this = $(this);
+        if ($this.data("clicked")) {
+            $("body").css({ 'backgroundImage': "url(img/tabletOff.jpg)" });
+            $this.data('clicked', false);
+            $("#startBtnImg").attr("src", "img/offBtn.jpg");
+            startMenu.hide();
+        } else {
+            //Menu is on!
+            $this.data('clicked', true);
+            var startBtnImg = $("#startBtnImg");
+            startBtnImg.attr("src", "img/onBtn.jpg");
+            var body = $("body");
+            body.css({ 'backgroundImage': "url(img/tabletOn.jpg)" });
+            startMenu.show();
+        }
+    });
+
+};
+
+//$("#tweetIt").click(function(ev) {
+//    var tweetMassage = "I played snake :D";
+//    if (tweetMassage.length > 140) {
+//        alert("tweets can't be so large");
+//    } else {
+//        var tweetLink = 'http://twitter.com/home?status=' + encodeURIComponent(tweetMassage);
+//        window.open(tweetLink, "_blank");
+//    }  $("#tweetIt").click(function(ev) {
+//        var tweetMassage = "I played snake :D";
+//        if (tweetMassage.length > 140) {
+//            alert("tweets can't be so large");
+//        } else {
+//            var tweetLink = 'http://twitter.com/home?status=' + encodeURIComponent(tweetMassage);
+//            window.open(tweetLink, "_blank");
+//        }
