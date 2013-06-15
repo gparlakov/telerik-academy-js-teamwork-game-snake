@@ -57,6 +57,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="img\gameBackground.jpg" />
     <Content Include="img\hoverBtn.jpg" />
     <Content Include="img\offBtn.jpg" />
     <Content Include="img\onBtn.jpg" />
@@ -67,7 +68,7 @@
     <Content Include="scripts\jquery-2.0.1.js" />
     <Content Include="scripts\jquery-2.0.1.min.js" />
     <Content Include="scripts\snake.js" />
-    <Content Include="snakeBackbone.html" />
+    <Content Include="old.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

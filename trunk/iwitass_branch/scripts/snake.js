@@ -623,6 +623,7 @@ window.onload = function () {
             $this.data('clicked', false);
             $("#startBtnImg").attr("src", "img/offBtn.jpg");
             startMenu.hide();
+            canvas.hide();
         } else {
             //Menu is on!
             $this.data('clicked', true);
