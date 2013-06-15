@@ -399,7 +399,7 @@ var gameControllersNS = (function ($) {
             //this appends massage to div>span
             var massage = $("#gameOverMassage");
             massage.text("Game Over your points: " + this.points.countEaten);
-            var gameOverBar = $('div.gameOver');
+            var gameOverBar = $('div#gameOver');
 
             //This calls the gameOver menu
 			gameOverBar.show(500, function() {
