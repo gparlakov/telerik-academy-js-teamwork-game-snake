@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Snake</title>
+    <script src="scripts/jquery-2.0.1.js"></script>
+    <script src="scripts/prototype.js"></script>    
+    <script src="scripts/snake.js"></script>
+    <style>
+        #gameOver {
+            position: absolute;
+            top: 100px;
+            left: 100px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!--//TODO  this is to be styled from inside gameController-->
+    <canvas id ="canvas" width ="400px" height ="400px"></canvas>
+    
+    <!--//TODO from menuController change content of this div -->
+    <div id="menu-holder">
+        <div id="startMenu" class="hidden">
+            <ul>
+                <li>
+                    <button id="startGame">Play</button>
+                </li>
+                <li>
+                    <button id="scoreBoard">Score Board</button>
+                </li>
+                <li>
+                    <button id="instructions">Instructions</button>
+                </li>
+                <li>
+                    <button id="about">About</button>
+                </li>
+            </ul>
+        </div>
+        <div id="gameOver" class="hidden">
+            <span id="Span1"></span>
+            <form id="Form1" action="" method="POST">
+                <input type="text" name="fname" placeholder="your name here">
+                <input type="button" value="Submit"> <br> 
+                <input type="button" id="Button1" value="Share on Tweeter"/>
+            </form>
+        </div>
+        <div ></div>
+    </div>
+
+ 
+</body>
+</html>
