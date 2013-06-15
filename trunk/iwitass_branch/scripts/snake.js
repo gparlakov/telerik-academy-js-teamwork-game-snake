@@ -402,9 +402,9 @@ var gameControllersNS = (function ($) {
             var gameOverBar = $('div#gameOver');
 
             //This calls the gameOver menu
-			gameOverBar.show(500, function() {
-			    $( this ).animate({top:250}, 'slow');
-			});
+			//gameOverBar.show(500, function() {
+			//    $( this ).animate({top:250}, 'slow');
+			//});
             
             //this appends tweet event to #tweetIt btn
             $("#tweetIt").click(function(ev) {
@@ -416,7 +416,7 @@ var gameControllersNS = (function ($) {
                     window.open(tweetLink, "_blank");
                 }
             });
-
+            gameOverBar.dialog();
 
 			clearInterval(this.gameInterval);
 },
