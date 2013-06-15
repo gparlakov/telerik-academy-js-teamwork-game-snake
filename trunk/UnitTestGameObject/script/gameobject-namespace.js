@@ -1,4 +1,42 @@
-﻿var Coords = Class.create({
+﻿window.snakeConstants = {
+    gameVisualizingElementClass: 'snake-game',
+    standartWidthOfElements: 10,
+    objectTypes: {
+        staticObject: 'staticObject',
+        movableObject: 'movableObject'
+    },
+    collisionObjectsTypes: {
+        wall: 'wall',
+        food: 'food',
+        tail: 'tail',
+        rock: 'rock',
+        snakeHead: 'snakeHead'
+    },
+    colors: {
+        snakeHeadColor: 'blue',
+        snakeTailColor: 'green',
+        wallColor: 'black',
+        rockColor: 'brown',
+        foodColor: 'red',
+        textColor: 'rgba(255, 0, 0, 0.3)'
+    },
+    /*A = keycode 65, a = keycode 97*/
+    /*  left = leyCode 37
+        up = keyCode 38
+        right = kkeyCode 39
+        down = keyCode 40
+    */
+    snakeKeys: {
+        left: 37,
+        up: 38,
+        right: 39,
+        down: 40
+    },
+    localStorageName: "snake-results-local",
+    rocksCount: 20
+}
+
+var Coords = Class.create({
     initialize: function (posX, posY) {
         this.X = posX;
         this.Y = posY;
@@ -73,12 +111,7 @@ var gameObjectsNS = (function () {
             $super(position, width);
             this.color = window.snakeConstants.colors.wallColor;
             this.collisionType = window.snakeConstants.collisionObjectsTypes.wall;
-        },
-        isCollision: function (coordObj) {
-            if (coordObj.X <= 0 || coordObj.X > 190 || coordObj.Y <= 0 || coordObj.Y >= 190) {
-                return true;
-            }
-        }
+        }        
     });
 
     var Rock = Class.create(StaticObject, {
