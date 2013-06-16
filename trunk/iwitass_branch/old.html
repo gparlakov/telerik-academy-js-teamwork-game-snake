@@ -12,11 +12,22 @@
             display: inline;
             height: 20px;
         }
-        #gameOver {
+         #gameOver {
             position: absolute;
             top: 100px;
-            left: 100px;
+            left: 251px;
+            background: #353535;
+            border: 2px solid #65ab79;
+            border-radius: 5px;
+            padding: 10px;
         }
+            #gameOver #tweetIt {
+                border: none;
+                border-radius: 2px;
+                padding-left: 17px;
+                padding-top: 6px;
+                background: white url(img/Twitter-bird.png) no-repeat -1px;
+            }
         .hidden {
             display: none;
         }
@@ -207,7 +218,7 @@
                 <form id="Form1" action="" method="POST">
                     <input type="text" name="fname" placeholder="your name here">
                     <input type="button" value="Submit"> <br> 
-                    <input type="button" id="tweetIt" value="Share on Tweeter"/>
+                    <input type="button" id="tweetIt" value=""/>
                 </form>
             </div>
             <div ></div>
