@@ -212,17 +212,17 @@ var gameControllersNS = (function ($) {
         },
         initEvents: function () {
             var canvasElement = this.drawer.canvasElement.get(0);
+            var controller = this;
             if (!canvasElement.gameEnginePointer) {
                 //give a pointer to game controller for event to find
                 canvasElement.gameEnginePointer = this;
             }
-
             $(window).on('keyup', function (event) {
                 var selector = '.' + snakeConstants.gameVisualizingElementClass;
-                var that = $(selector)[0].gameEnginePointer;
+                //var that = $(selector)[0].gameEnginePointer;
                 var pressedKeyCode = event.keyCode;
 
-                that.handleKeyPress(pressedKeyCode);
+                controller.handleKeyPress(pressedKeyCode);
             });
         },
         addObject: function (gameObject) {
@@ -397,9 +397,13 @@ var gameControllersNS = (function ($) {
         gameOver: function () {
             //TODO: SUBMIT onclick??
             //this appends massage to div>span
+
+            clearInterval(this.gameInterval);
+
             var massage = $("#gameOverMassage");
             massage.text("Game Over your points: " + this.points.countEaten);
             var gameOverBar = $('div#gameOver');
+            var context = this.drawer.ctx;
 
             //This calls the gameOver menu
 			gameOverBar.show(500, function() {
@@ -416,9 +420,13 @@ var gameControllersNS = (function ($) {
                     window.open(tweetLink, "_blank");
                 }
             });
+            $("#back").click(function () {
+                $("#tweetIt").off();
+                $("#back").off();
+                gameOverBar.hide();         
+                $("#startMenu").show();
+            });
             //gameOverBar.dialog();
-
-			clearInterval(this.gameInterval);
 },
         //*Initial generating*//
        
@@ -597,7 +605,6 @@ var startGame = function () {
 
     var controller = new gameControllersNS.GameController(drawer, resultsHandler);
 
-    
     controller.gameLoop();
 };
 
@@ -610,7 +617,8 @@ window.onload = function () {
    
     var $ = jQuery.noConflict();
     var _startGame = $("#startGame");
-    _startGame.click(function() {
+    _startGame.click(function () {
+        canvas.show();
         startGame();
         startMenu.hide();
     });
