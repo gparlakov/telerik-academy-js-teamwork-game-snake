@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Snake</title>
+
+    <!--Styles-->
+    <link href="styles/snakeStyle.css" rel="stylesheet" />
+
+    <!--Scripts-->
+    <script src="scripts/jquery-2.0.1.js"></script>
+    <script src="scripts/jquery-ui-1.10.3.custom.js"></script>
+    <script src="scripts/prototype.js"></script>  
+      
+    <!--Constants and Coords class-->
+    <script src="scripts/snakeConstants.js"></script>
+
+    <!--all game objects namespace-->
+    <script src="scripts/gameObjectsNS.js"></script>
+
+    <!--The visualizing controllers-->
+    <script src="scripts/drawersNS.js"></script>
+
+    <!--game controllers and result controllers -->
+    <script src="scripts/gameControllersNS.js"></script>
+
+    <!--The main manu controller-->
+    <script src="scripts/menuControllersNS.js"></script>
+
+    <!--The main js-->
+    <script src="scripts/snake.js"></script>
+    
+    
+</head>
+    <body>
+       <div id="startBtn">
+            <img id="startBtnImg"src="img/offBtn.jpg" alt="This is not supported by your browser" />
+       </div>   
+
+        
+        <canvas id ="canvas" width ="322px" height ="414px"></canvas>
+
+        <div id="menu-holder">
+            <div id="startMenu" class="hidden">
+                <ul>
+                    <li>
+                        <input type="button" id="startGame" value="Play" />                        
+                    </li>
+
+                    <li>
+                        <input type="button" id="scoreBoard" value="Scores" />
+                    </li>
+
+                    <li>
+                        <input type="button" id="instructions" value="Instructions" />
+                    </li>
+
+                    <li>
+                        <input type="button" id="about" value="About" />
+                    </li>
+                </ul>
+            </div>
+            <div id="showScores" class="hidden">
+                <table id="sccoreTable">
+                    <tr>
+                        <th>Name</th>
+                        <th>Score</th>
+                        <th>Time Played</th>
+                    </tr>                                       
+                    <tr id="backButton">
+                        <td colspan ="3">
+                            Back to menu
+                            <a class="backTo">                                
+                                <img src="img/backTo.png" />
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="gameOver" class="hidden">
+                <span id="Span1">Game Over</span>
+                <form id="gameover-form" action="#" method="post">
+                    <input type="text" name="fname" id="player-name" placeholder="your name here"/>
+                    <input type="button" id="submit-result" value="Submit"/> <br/> 
+                    <input type="button" id="tweetIt" value=""/>
+                    <input type="button" id="back" value="Back to Menu" />
+                </form>
+            </div> 
+            <div  id="instructions-holder" class="hidden">
+               <h3>Controls</h3>
+               <dl>
+                   <dt>Up:</dt>
+                   <dd>Up Arrow</dd>
+                   <dt>Down:</dt>
+                   <dd>Down Arrow</dd>
+                   <dt>Left:</dt>
+                   <dd>Left Arrow</dd>
+                   <dt>Right:</dt>
+                   <dd>Right Arrow</dd>
+               </dl>  
+            </div>           
+        </div>
+
+ 
+    </body>
+</html>
