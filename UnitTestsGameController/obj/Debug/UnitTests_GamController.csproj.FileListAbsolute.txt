@@ -1,0 +1,4 @@
+C:\projects\projects\Teamworks\guava\FinalBranch\UnitTestsGameController\bin\UnitTests_GamController.dll
+C:\projects\projects\Teamworks\guava\FinalBranch\UnitTestsGameController\bin\UnitTests_GamController.pdb
+C:\projects\projects\Teamworks\guava\FinalBranch\UnitTestsGameController\obj\Debug\UnitTests_GamController.dll
+C:\projects\projects\Teamworks\guava\FinalBranch\UnitTestsGameController\obj\Debug\UnitTests_GamController.pdb

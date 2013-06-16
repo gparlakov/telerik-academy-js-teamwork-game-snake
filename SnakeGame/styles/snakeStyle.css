@@ -1,0 +1,110 @@
+﻿.backTo > img {
+    padding-right: -40px;
+    display: inline;
+    height: 20px;
+}
+    #gameOver {
+    position: absolute;
+    top: 100px;
+    left: 251px;
+    background: #353535;
+    border: 2px solid #65ab79;
+    border-radius: 5px;
+    padding: 10px;
+}
+    #gameOver #tweetIt {
+        border: none;
+        border-radius: 2px;
+        padding-top: 6px;
+        width: 23px;
+        background: white url(../img/Twitter-bird.png) no-repeat -1px;
+    }
+.hidden {
+    display: none;
+}
+body {
+    background-image: url(../img/tabletOff.jpg);
+    background-repeat: no-repeat;
+}
+#startBtn  {
+    position: absolute;
+    top: 486px;
+    left: 354px;
+}
+canvas {
+    display: inline-block;
+    margin-left: 205px;
+    margin-top: 56px;
+}
+#startMenu {
+    background-image: url(../img/gameBackground.jpg);
+    background-repeat: no-repeat;
+    width: 322px;
+    height: 414px;
+    position: absolute;
+    top: 66px;
+    left: 214px;
+}
+ul>li {
+    list-style-type: none;
+    background: #d9ce27;
+    border: 2px solid #65ab79;
+    border-radius: 5px;
+    width: 142px;
+    margin-top: 5px;
+}
+ul > li:hover {
+    background: #65ab79;
+}
+ul {
+    background: #f1de99;
+    width: 150px;
+    height: 226px;
+    position: absolute;
+    top: 102px;
+    left: 172px;
+    padding: 0;
+}
+       
+li> div {
+    height: 24px;
+    text-align: center;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 10px;
+    font-size: 20px;
+    color: black;
+    font-weight: bold;
+    text-align: left;
+}
+li input:hover {
+    background: #65ab79;
+}
+li input {
+    border: none;
+    background: #d9ce27;
+    height: 50px;
+    text-align: center;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 10px;
+    font-size: 20px;
+    color: black;
+    font-weight: bold;
+    text-align: left;
+}
+table {
+    position: absolute;
+    top: 66px;
+    left: 214px;
+    background: green;
+    width: 322px;
+    height: 414px;
+}
+td {
+    background: white;
+}
+table > img {
+    position: absolute;
+    left: 3300px;
+}
